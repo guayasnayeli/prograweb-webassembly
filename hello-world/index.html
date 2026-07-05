@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello WebAssembly — UCEConnect</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #F7FAFC;
+      padding: 2rem;
+      color: #2D3748;
+    }
+    h1 {
+      color: #1A365D;
+      border-bottom: 3px solid #2B6CB0;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #718096;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: white;
+      border: 1px solid #BEE3F8;
+      border-left: 4px solid #2B6CB0;
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 { color: #1A365D; margin-bottom: 0.75rem; }
+    .inputs {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    input {
+      width: 80px;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #90CDF4;
+      border-radius: 4px;
+      font-size: 1rem;
+      color: #2D3748;
+    }
+    button {
+      background: #2B6CB0;
+      color: white;
+      border: none;
+      padding: 0.4rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    button:hover { background: #2C5282; }
+    .result {
+      background: #EBF8FF;
+      border: 1px solid #90CDF4;
+      border-radius: 4px;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      color: #1A365D;
+      min-height: 2rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #C6F6D5;
+      color: #276749;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-left: 0.5rem;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #A0AEC0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Hello WebAssembly <span class="badge">Wasm Running</span></h1>
+  <p class="subtitle">
+    UCEConnect — Web Programming Practice | UCE FICA — Information Systems S7P1
+  </p>
+
+  <!-- SUM -->
+  <div class="card">
+    <h3>1. Sum — sum(a, b)</h3>
+    <div class="inputs">
+      <input type="number" id="sumA" value="15" />
+      <span>+</span>
+      <input type="number" id="sumB" value="27" />
+      <button onclick="runSum()">Run in Wasm</button>
+    </div>
+    <div class="result" id="sumResult">Result will appear here</div>
+  </div>
+
+  <!-- MULTIPLY -->
+  <div class="card">
+    <h3>2. Multiply — multiply(a, b)</h3>
+    <div class="inputs">
+      <input type="number" id="mulA" value="6" />
+      <span>×</span>
+      <input type="number" id="mulB" value="7" />
+      <button onclick="runMultiply()">Run in Wasm</button>
+    </div>
+    <div class="result" id="mulResult">Result will appear here</div>
+  </div>
+
+  <!-- FACTORIAL -->
+  <div class="card">
+    <h3>3. Factorial — factorial(n)</h3>
+    <div class="inputs">
+      <span>factorial(</span>
+      <input type="number" id="factN" value="5" />
+      <span>)</span>
+      <button onclick="runFactorial()">Run in Wasm</button>
+    </div>
+    <div class="result" id="factResult">Result will appear here</div>
+  </div>
+
+  <p class="footer">
+    All operations execute inside the browser's WebAssembly engine — not in JavaScript
+  </p>
+
+  <script>
+    let wasmExports = null;
+
+    async function loadWasm() {
+      const { instance } = await WebAssembly.instantiateStreaming(
+        fetch('./build/release.wasm')
+      );
+      wasmExports = instance.exports;
+      console.log('WebAssembly module loaded successfully');
+      console.log('Available exports:', Object.keys(wasmExports));
+    }
+
+    function runSum() {
+      if (!wasmExports) return;
+      const a = parseInt(document.getElementById('sumA').value);
+      const b = parseInt(document.getElementById('sumB').value);
+      const result = wasmExports.sum(a, b);
+      document.getElementById('sumResult').innerHTML =
+        `<strong>sum(${a}, ${b}) = ${result}</strong> — executed in WebAssembly`;
+    }
+
+    function runMultiply() {
+      if (!wasmExports) return;
+      const a = parseInt(document.getElementById('mulA').value);
+      const b = parseInt(document.getElementById('mulB').value);
+      const result = wasmExports.multiply(a, b);
+      document.getElementById('mulResult').innerHTML =
+        `<strong>multiply(${a}, ${b}) = ${result}</strong> — executed in WebAssembly`;
+    }
+
+    function runFactorial() {
+      if (!wasmExports) return;
+      const n = parseInt(document.getElementById('factN').value);
+      const result = wasmExports.factorial(n);
+      document.getElementById('factResult').innerHTML =
+        `<strong>factorial(${n}) = ${result}</strong> — executed in WebAssembly`;
+    }
+
+    loadWasm();
+  </script>
+
+</body>
+</html>
